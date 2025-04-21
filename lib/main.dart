@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(), // خلي البداية هي splash screen
+      home: SplashScreen(), // خلي البداية هي splash screen
       routes: {
         '/login': (context) => const Login_Screen(),
         '/welcome': (context) => const WelcomeScreen(),
