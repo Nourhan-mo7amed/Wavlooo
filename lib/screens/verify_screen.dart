@@ -1,10 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:chat/screens/home_screen.dart';
-import '../components/Orange_Circle.dart';
+import 'package:chat/screens/Home_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:http/http.dart' as http;
+import '../components/Orange_Circle.dart';
 
 class VerifyScreen extends StatefulWidget {
   final String email;
@@ -19,57 +17,70 @@ class VerifyScreenState extends State<VerifyScreen> {
   String otp = '';
   TextEditingController otpController = TextEditingController();
 
-  Future<void> verifyOtpFromApi() async {
+  Future<void> verifyOtp() async {
+    if (otp.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid 6-digit OTP")),
+      );
+      return;
+    }
+
     final url = Uri.parse(
       "https://wavlo.azurewebsites.net/api/auth/validate-otp",
     );
 
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: '{"email": "${widget.email}", "otp": "$otp"}',
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: '{"email": "${widget.email}", "otp": "$otp"}',
+      );
 
-    print("🔐 Sent OTP: $otp for ${widget.email}");
-    print("📡 Response: ${response.statusCode} - ${response.body}");
-    if (response.statusCode == 200) {
-      try {
-        final responseJson = jsonDecode(response.body);
-
-        if (responseJson.containsKey('token')) {
-          final token = responseJson['token'];
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreen(token: token)),
-          );
-        } else if (response.body.contains("OTP Verified Successfully")) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("✅ OTP Verified Successfully!")),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("❌ Unexpected Response")),
-          );
-        }
-      } catch (e) {
-        print("Error decoding response: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("❌ Failed to process response")),
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(token: '')),
         );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("❌ Invalid OTP")));
       }
-    } else {
+    } catch (e) {
+      print("OTP verification error: $e");
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("❌ Failed to verify OTP")));
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
     }
   }
 
-  void resetOtp() {
-    setState(() {
-      otp = '';
-      otpController.clear();
-    });
+  Future<void> resendOtp() async {
+    final url = Uri.parse(
+      "https://wavlo.azurewebsites.net/api/auth/resend-otp",
+    );
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: '{"email": "${widget.email}"}',
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ OTP re-sent successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("❌ Failed to resend OTP")));
+      }
+    } catch (e) {
+      print("Resend error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("⚠️ Error resending OTP")));
+    }
   }
 
   @override
@@ -130,33 +141,25 @@ class VerifyScreenState extends State<VerifyScreen> {
                     fieldHeight: 65,
                     fieldWidth: 45,
                     inactiveColor: Colors.grey,
-                    inactiveFillColor: Color(0xffF37C50).withOpacity(0.08),
-                    selectedColor: Color(0xffF37C50),
+                    inactiveFillColor: const Color(
+                      0xffF37C50,
+                    ).withOpacity(0.08),
+                    selectedColor: const Color(0xffF37C50),
                     selectedFillColor: Colors.white,
                     activeFillColor: Colors.white,
                   ),
-                  onCompleted: (value) {
+                  onChanged: (value) {
                     setState(() {
                       otp = value;
                     });
                   },
-                ),
-                const SizedBox(height: 50),
-                ElevatedButton(
-                  onPressed: () {
-                    otp = otpController.text.trim();
-                    print("🚀 OTP entered: $otp");
-
-                    if (otp.length == 6) {
-                      verifyOtpFromApi();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Please enter a valid 6-digit OTP"),
-                        ),
-                      );
-                    }
+                  onCompleted: (value) {
+                    otp = value;
                   },
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: verifyOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xffF37C50),
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -173,9 +176,9 @@ class VerifyScreenState extends State<VerifyScreen> {
                 const SizedBox(height: 20),
                 Center(
                   child: TextButton(
-                    onPressed: resetOtp,
+                    onPressed: resendOtp,
                     child: RichText(
-                      text: TextSpan(
+                      text: const TextSpan(
                         children: [
                           TextSpan(
                             text: "Didn't receive code? ",
