@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:chat/screens/Home_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:chat/screens/home_screen.dart';
+import '../components/Orange_Circle.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-import '../components/Orange_Circle.dart'; // دي ديكور الدائرة اللي عندك
-
 class VerifyScreen extends StatefulWidget {
-  const VerifyScreen({super.key});
+  final String email;
+
+  const VerifyScreen({super.key, required this.email});
 
   @override
   State<VerifyScreen> createState() => VerifyScreenState();
@@ -13,28 +15,44 @@ class VerifyScreen extends StatefulWidget {
 
 class VerifyScreenState extends State<VerifyScreen> {
   String otp = '';
-  TextEditingController otpController =
-      TextEditingController(); // كنترولر لحقل OTP
+  TextEditingController otpController = TextEditingController();
 
-  void verifyOtp() {
-    if (otp.length != 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid 4-digit OTP")),
+  Future<void> verifyOtpFromApi() async {
+    final url = Uri.parse(
+      "https://wavlo.azurewebsites.net/api/auth/validate-otp",
+    );
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: '{"email": "${widget.email}", "otp": "$otp"}',
+    );
+
+    print("🔐 Sent OTP: $otp for ${widget.email}");
+    print("📡 Response: ${response.statusCode} - ${response.body}");
+
+    if (response.statusCode == 200) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
-      return;
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("❌ Invalid OTP")));
     }
   }
 
   void resetOtp() {
     setState(() {
       otp = '';
-      otpController.clear(); // يمسح الخانات
+      otpController.clear();
     });
   }
 
   @override
   void dispose() {
-    otpController.dispose(); // نفضي الكنترولر لما نخلص
+    otpController.dispose();
     super.dispose();
   }
 
@@ -77,8 +95,8 @@ class VerifyScreenState extends State<VerifyScreen> {
                 const SizedBox(height: 50),
                 PinCodeTextField(
                   appContext: context,
-                  controller: otpController, // ربط الكنترولر هنا
-                  length: 4,
+                  controller: otpController,
+                  length: 6, // تغيير من 4 إلى 6
                   obscureText: true,
                   animationType: AnimationType.fade,
                   keyboardType: TextInputType.number,
@@ -88,18 +106,11 @@ class VerifyScreenState extends State<VerifyScreen> {
                     shape: PinCodeFieldShape.box,
                     borderRadius: BorderRadius.circular(20),
                     fieldHeight: 65,
-                    fieldWidth: 65,
-                    inactiveColor:
-                        Colors.grey, // لون البوردر لما الخانة مش متفاعلة
-                    inactiveFillColor: Color(
-                      0xffF37C50,
-                    ).withOpacity(0.08), // لون الخلفية لما الخانة مش متفاعلة
-                    selectedColor: Color(
-                      0xffF37C50,
-                    ), // لون البوردر لما الخانة عليها فوكس
-                    selectedFillColor:
-                        Colors.white, // لون الخلفية لما الخانة عليها فوكس
-
+                    fieldWidth: 45,
+                    inactiveColor: Colors.grey,
+                    inactiveFillColor: Color(0xffF37C50).withOpacity(0.08),
+                    selectedColor: Color(0xffF37C50),
+                    selectedFillColor: Colors.white,
                     activeFillColor: Colors.white,
                   ),
                   onChanged: (value) {
@@ -114,10 +125,15 @@ class VerifyScreenState extends State<VerifyScreen> {
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
+                    if (otp.length == 6) {
+                      verifyOtpFromApi();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please enter a valid 6-digit OTP"),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xffF37C50),
@@ -135,7 +151,7 @@ class VerifyScreenState extends State<VerifyScreen> {
                 const SizedBox(height: 20),
                 Center(
                   child: TextButton(
-                    onPressed: resetOtp, // إعادة تعيين الكود عند الضغط
+                    onPressed: resetOtp,
                     child: RichText(
                       text: TextSpan(
                         children: [
@@ -149,10 +165,9 @@ class VerifyScreenState extends State<VerifyScreen> {
                           TextSpan(
                             text: "Resend",
                             style: TextStyle(
-                              color: Color(0xffF37C50), // اللون البرتقالي بتاعك
+                              color: Color(0xffF37C50),
                               fontSize: 16,
-                              fontWeight:
-                                  FontWeight.bold, // لو عايزها تخينة شوية
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],

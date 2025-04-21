@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:chat/screens/Status_screen.dart';
+import 'package:chat/screens/status_screen.dart';
 import 'package:chat/screens/call_screen.dart';
 
 class ChatsListScreen extends StatefulWidget {
@@ -34,6 +34,8 @@ class _ChatsListScreenState extends State<ChatsListScreen> {
       },
     );
 
+    if (!mounted) return; // ✅ تأكدي إن الـ Widget لسه موجودة
+
     if (response.statusCode == 200) {
       setState(() {
         chats = jsonDecode(response.body);
@@ -43,7 +45,7 @@ class _ChatsListScreenState extends State<ChatsListScreen> {
       print("❌ Failed to load chats: ${response.body}");
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Failed to load chats")));
+      ).showSnackBar(const SnackBar(content: Text("Failed to load chats")));
       setState(() {
         isLoading = false;
       });

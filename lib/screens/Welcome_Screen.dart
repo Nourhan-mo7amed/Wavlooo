@@ -1,7 +1,7 @@
-import 'package:chat/screens/Account_Screen.dart';
+import 'package:chat/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 import '../components/Orange_Circle.dart';
-import 'Login_Screen.dart';
+import 'Login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -93,7 +93,7 @@ class RegisterButton extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Account_Screen()),
+          MaterialPageRoute(builder: (context) => RegisterScreen()),
         );
       },
       style: ElevatedButton.styleFrom(

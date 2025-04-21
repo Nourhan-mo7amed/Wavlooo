@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'ChatsListScreen.dart';
 import '../components/Orange_Circle.dart';
 import '../components/TextField.dart';
-import 'Account_Screen.dart';
+import 'register_screen.dart';
 
 class Login_Screen extends StatefulWidget {
   const Login_Screen({super.key});
@@ -166,7 +166,7 @@ class _Login_ScreenState extends State<Login_Screen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Account_Screen(),
+                          builder: (context) => RegisterScreen(),
                         ),
                       );
                     },

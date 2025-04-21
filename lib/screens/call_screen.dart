@@ -92,15 +92,15 @@ class CallScreen extends StatelessWidget {
             );
           },
         ),
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: FloatingActionButton(
-            backgroundColor: Color(0xffF37C50),
-            onPressed: () {},
-            child: const Icon(Icons.add_ic_call, color: Colors.white),
-          ),
-        ),
+        // Positioned(
+        //   bottom: 20,
+        //   right: 20,
+        //   child: FloatingActionButton(
+        //     backgroundColor: Color(0xffF37C50),
+        //     onPressed: () {},
+        //     child: const Icon(Icons.add_ic_call, color: Colors.white),
+        //   ),
+        // ),
       ],
     );
   }
