@@ -73,20 +73,20 @@ class CallScreen extends StatelessWidget {
                 backgroundImage: NetworkImage(call['image']),
                 radius: 25,
               ),
-              title: Text(call['name']),
+              title: Text(call['name'], style: const TextStyle(fontSize: 18)),
               subtitle: Row(
                 children: [
                   Icon(
                     isMissed ? Icons.arrow_downward : Icons.arrow_upward,
                     color: isMissed ? Colors.red : Colors.green,
-                    size: 16,
+                    size: 17,
                   ),
                   const SizedBox(width: 4),
                   Text(call['time'], style: const TextStyle(fontSize: 13)),
                 ],
               ),
               trailing: Icon(
-                isVideo ? Icons.videocam : Icons.call,
+                isVideo ? Icons.videocam_outlined : Icons.phone_outlined,
                 color: Colors.black54,
               ),
             );

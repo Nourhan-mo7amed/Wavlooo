@@ -22,35 +22,48 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    print("📲 Token received: ${widget.token}");
     fetchChats();
   }
 
   Future<void> fetchChats() async {
     final url = Uri.parse("https://wavlo.azurewebsites.net/api/chat/chats");
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${widget.token}',
-      },
-    );
 
-    if (!mounted) return;
-
-    if (response.statusCode == 200) {
-      setState(() {
-        chats = jsonDecode(response.body);
-        isLoading = false;
-      });
-    } else {
-      print("❌ Failed to load chats: ${response.body}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to load chats")),
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
       );
-      setState(() {
-        isLoading = false;
-      });
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        print("✅ Chats loaded: ${jsonData.length} chats");
+
+        setState(() {
+          chats = jsonData;
+          isLoading = false;
+        });
+      } else {
+        print("❌ Failed to load chats: ${response.body}");
+        setState(() => isLoading = false);
+        showError("Failed to load chats");
+      }
+    } catch (e) {
+      print("💥 Exception while fetching chats: $e");
+      setState(() => isLoading = false);
+      showError("Something went wrong. Try again later.");
     }
+  }
+
+  void showError(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void toggleFab() {
@@ -66,15 +79,16 @@ class _HomeScreenState extends State<HomeScreen>
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: buildAppBar(),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
-                children: [
-                  chats.isEmpty ? buildEmptyChatList() : buildChatList(),
-                  const StatusScreen(),
-                  const CallScreen(),
-                ],
-              ),
+        body:
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                  children: [
+                    chats.isEmpty ? buildEmptyChatList() : buildChatList(),
+                    const StatusScreen(),
+                    const CallScreen(),
+                  ],
+                ),
         floatingActionButton: buildFloatingActionButton(),
       ),
     );
@@ -84,12 +98,13 @@ class _HomeScreenState extends State<HomeScreen>
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: Colors.white,
-      title: Text(
+      title: const Text(
         "WAVLO",
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 22,
           color: Color(0xffF37C50),
           fontWeight: FontWeight.bold,
+          fontFamily: "ADLaMDisplay",
         ),
       ),
       actions: [
@@ -102,12 +117,13 @@ class _HomeScreenState extends State<HomeScreen>
               Navigator.of(context).pushReplacementNamed('/welcome');
             }
           },
-          itemBuilder: (BuildContext context) => [
-            const PopupMenuItem<String>(
-              value: 'logout',
-              child: Text('Logout'),
-            ),
-          ],
+          itemBuilder:
+              (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Text('Logout'),
+                ),
+              ],
         ),
         const SizedBox(width: 10),
       ],
@@ -116,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Color(0xFFF2F2F2),
             borderRadius: BorderRadius.circular(30),
           ),
           child: TabBar(
@@ -125,16 +141,37 @@ class _HomeScreenState extends State<HomeScreen>
               fontWeight: FontWeight.w500,
             ),
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.black87,
+            unselectedLabelColor: Colors.grey,
             indicator: BoxDecoration(
               color: Color(0xffF37C50),
               borderRadius: BorderRadius.circular(30),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             tabs: const [
-              Tab(child: Center(child: Text("All Chats"))),
-              Tab(child: Center(child: Text("Status"))),
-              Tab(child: Center(child: Text("Call"))),
+              Tab(
+                child: Center(
+                  child: Text(
+                    "All Chats",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Center(
+                  child: Text(
+                    "Status",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Center(
+                  child: Text(
+                    "Call",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -177,14 +214,24 @@ class _HomeScreenState extends State<HomeScreen>
           leading: CircleAvatar(
             radius: 30,
             backgroundImage: NetworkImage(
-              'https://randomuser.me/api/portraits/men/1.jpg',
+              'https://randomuser.me/api/portraits/men/${index + 1}.jpg',
             ),
           ),
-          title: Text(chat['name'] ?? "Chat Name"),
-          subtitle: Text(chat['company'] ?? "Company Name"),
+          title: Text(
+            chat['name'] ?? "Chat Name",
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1B222C),
+            ),
+          ),
+          subtitle: Text(
+            chat['company'] ?? "Company Name",
+            style: const TextStyle(color: Colors.black54),
+          ),
           trailing: buildTrailing(chat),
           onTap: () {
-            // Navigation to chat detail
+            // Navigate to chat details
           },
         );
       },
@@ -225,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen>
           const SizedBox(height: 16),
         ],
         FloatingActionButton(
-          backgroundColor: Color(0xffF37C50),
+          backgroundColor: const Color(0xffF37C50),
           onPressed: toggleFab,
           shape: const CircleBorder(),
           child: Icon(
@@ -241,8 +288,10 @@ class _HomeScreenState extends State<HomeScreen>
     return FloatingActionButton(
       heroTag: heroTag,
       mini: true,
-      backgroundColor: Color(0xffF37C50),
-      onPressed: () {},
+      backgroundColor: const Color(0xffF37C50),
+      onPressed: () {
+        // Add specific actions here later
+      },
       child: Icon(icon, color: Colors.white),
     );
   }

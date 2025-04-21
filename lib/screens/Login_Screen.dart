@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'package:chat/screens/ForgotPasswordScreen.dart';
+import 'package:chat/screens/Home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'ChatsListScreen.dart';
 import '../components/Orange_Circle.dart';
 import '../components/TextField.dart';
 import 'register_screen.dart';
@@ -42,9 +43,7 @@ class _Login_ScreenState extends State<Login_Screen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => ChatsListScreen(token: token),
-          ),
+          MaterialPageRoute(builder: (context) => HomeScreen(token: token)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +124,14 @@ class _Login_ScreenState extends State<Login_Screen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
                     child: const Text(
                       "Forgot your password?",
                       style: TextStyle(

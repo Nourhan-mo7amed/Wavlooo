@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chat/screens/Login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -185,7 +186,12 @@ class RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
                 Center(
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Login_Screen()),
+                      );
+                    },
                     child: const Text(
                       "Already have an account",
                       style: TextStyle(color: Colors.black87, fontSize: 16),

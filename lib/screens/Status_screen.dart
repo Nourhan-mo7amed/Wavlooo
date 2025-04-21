@@ -55,13 +55,19 @@ class StatusScreen extends StatelessWidget {
                   ),
                   CircleAvatar(
                     radius: 10,
-                    backgroundColor:Color(0xffF37C50),
+                    backgroundColor: Color(0xffF37C50),
                     child: const Icon(Icons.add, size: 14, color: Colors.white),
                   ),
                 ],
               ),
-              title: const Text("My Status"),
-              subtitle: const Text("Tap To Add Status"),
+              title: const Text(
+                "My Status",
+                style: TextStyle(fontSize: 19, color: Color(0xFF1B222C)),
+              ),
+              subtitle: const Text(
+                "Tap To Add Status",
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -83,7 +89,7 @@ class StatusScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color:Color(0xffF37C50), width: 3),
+                        border: Border.all(color: Color(0xffF37C50), width: 3),
                       ),
                       child: CircleAvatar(
                         backgroundImage: NetworkImage(status['image']!),

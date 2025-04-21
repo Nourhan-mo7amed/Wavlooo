@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat/screens/home_screen.dart';
@@ -30,16 +32,36 @@ class VerifyScreenState extends State<VerifyScreen> {
 
     print("🔐 Sent OTP: $otp for ${widget.email}");
     print("📡 Response: ${response.statusCode} - ${response.body}");
-
     if (response.statusCode == 200) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      try {
+        final responseJson = jsonDecode(response.body);
+
+        if (responseJson.containsKey('token')) {
+          final token = responseJson['token'];
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen(token: token)),
+          );
+        } else if (response.body.contains("OTP Verified Successfully")) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("✅ OTP Verified Successfully!")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("❌ Unexpected Response")),
+          );
+        }
+      } catch (e) {
+        print("Error decoding response: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("❌ Failed to process response")),
+        );
+      }
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("❌ Invalid OTP")));
+      ).showSnackBar(const SnackBar(content: Text("❌ Failed to verify OTP")));
     }
   }
 
@@ -96,7 +118,7 @@ class VerifyScreenState extends State<VerifyScreen> {
                 PinCodeTextField(
                   appContext: context,
                   controller: otpController,
-                  length: 6, // تغيير من 4 إلى 6
+                  length: 6,
                   obscureText: true,
                   animationType: AnimationType.fade,
                   keyboardType: TextInputType.number,
@@ -113,18 +135,18 @@ class VerifyScreenState extends State<VerifyScreen> {
                     selectedFillColor: Colors.white,
                     activeFillColor: Colors.white,
                   ),
-                  onChanged: (value) {
+                  onCompleted: (value) {
                     setState(() {
                       otp = value;
                     });
-                  },
-                  onCompleted: (value) {
-                    otp = value;
                   },
                 ),
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: () {
+                    otp = otpController.text.trim();
+                    print("🚀 OTP entered: $otp");
+
                     if (otp.length == 6) {
                       verifyOtpFromApi();
                     } else {
