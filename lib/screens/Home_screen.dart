@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:chat/screens/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat/screens/status_screen.dart';
@@ -147,6 +148,8 @@ class _HomeScreenState extends State<HomeScreen>
               borderRadius: BorderRadius.circular(30),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
+            indicatorColor: Colors.transparent,
+
             tabs: const [
               Tab(
                 child: Center(
@@ -231,7 +234,17 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           trailing: buildTrailing(chat),
           onTap: () {
-            // Navigate to chat details
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => ChatScreen(
+                      userName: chat['name'] ?? "Chat Name",
+                      userImage:
+                          'https://randomuser.me/api/portraits/men/${index + 1}.jpg',
+                    ),
+              ),
+            );
           },
         );
       },
